@@ -53,3 +53,39 @@ class GlassdoorScraper(JobScraper):
         # TODO: Implement Glassdoor scraping
         return []
 
+
+class HelloWorkScraper(JobScraper):
+    """Hello Work job scraper (Pôle Emploi)"""
+    
+    def search(self, keywords: List[str], location: str, max_results: int = 50) -> List[Dict]:
+        """
+        Search for jobs on Hello Work (Pôle Emploi)
+        URL: https://www.hellowork.com
+        """
+        # TODO: Implement Hello Work scraping
+        return []
+
+
+class JobTeaserScraper(JobScraper):
+    """Job Teaser job scraper"""
+    
+    def search(self, keywords: List[str], location: str, max_results: int = 50) -> List[Dict]:
+        """
+        Search for jobs on Job Teaser
+        URL: https://www.jobteaser.com
+        """
+        # TODO: Implement Job Teaser scraping
+        return []
+
+
+class WelcomeToTheJungleScraper(JobScraper):
+    """Welcome to the Jungle job scraper"""
+    
+    def search(self, keywords: List[str], location: str, max_results: int = 50) -> List[Dict]:
+        """
+        Search for jobs on Welcome to the Jungle
+        URL: https://www.welcometothejungle.com
+        """
+        # TODO: Implement Welcome to the Jungle scraping
+        return []
+

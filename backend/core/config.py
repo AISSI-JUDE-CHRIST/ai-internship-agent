@@ -28,9 +28,18 @@ class Settings(BaseSettings):
     
     # Job Search
     DEFAULT_MAX_RESULTS: int = 50
-    JOB_SEARCH_PLATFORMS: List[str] = ["linkedin", "indeed", "glassdoor"]
+    JOB_SEARCH_PLATFORMS: List[str] = [
+        "linkedin",
+        "indeed",
+        "glassdoor",
+        "hello_work",
+        "job_teaser",
+        "welcome_to_the_jungle"
+    ]
     
-    # Database (optional)
+    # Database
+    # SQLite (default for development): sqlite:///./job_agent.db
+    # PostgreSQL: postgresql://user:password@localhost:5432/dbname
     DATABASE_URL: str = "sqlite:///./job_agent.db"
     
     # Security

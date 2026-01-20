@@ -28,9 +28,10 @@ pandas>=2.1.0
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
 
-# Database (optional)
+# Database
 sqlalchemy>=2.0.23
 alembic>=1.12.1
+psycopg2-binary>=2.9.9  # PostgreSQL adapter (optional, only if using PostgreSQL)
 
 # Utilities
 pyyaml>=6.0.1
