@@ -1,2 +1,0 @@
-# AI Job Application Agent
-
