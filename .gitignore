@@ -75,6 +75,9 @@ cover_letters/
 *.pdf
 *.docx
 
+# Uploads
+uploads/
+
 # Config files with sensitive data
 config.local.yaml
 secrets.yaml

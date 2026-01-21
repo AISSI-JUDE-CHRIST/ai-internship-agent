@@ -35,7 +35,15 @@ class LinkedInScraper(JobScraper):
     
     def search(self, keywords: List[str], location: str, max_results: int = 50) -> List[Dict]:
         # TODO: Implement LinkedIn scraping
-        return []
+        # For now, return mock data for testing
+        return [{
+            'id': f'linkedin_{i}',
+            'title': f'Job {i}',
+            'company': f'Company {i}',
+            'location': location,
+            'description': f'Description for job {i}',
+            'platform': 'linkedin',
+        } for i in range(min(5, max_results))]
 
 
 class IndeedScraper(JobScraper):
@@ -43,7 +51,15 @@ class IndeedScraper(JobScraper):
     
     def search(self, keywords: List[str], location: str, max_results: int = 50) -> List[Dict]:
         # TODO: Implement Indeed scraping
-        return []
+        # For now, return mock data for testing
+        return [{
+            'id': f'indeed_{i}',
+            'title': f'Job {i}',
+            'company': f'Company {i}',
+            'location': location,
+            'description': f'Description for job {i}',
+            'platform': 'indeed',
+        } for i in range(min(5, max_results))]
 
 
 class GlassdoorScraper(JobScraper):

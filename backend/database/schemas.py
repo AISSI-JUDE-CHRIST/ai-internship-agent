@@ -32,6 +32,8 @@ class UserResponse(UserBase):
     
     class Config:
         from_attributes = True
+        # For Pydantic v2 compatibility
+        orm_mode = True
 
 
 # Resume Schemas

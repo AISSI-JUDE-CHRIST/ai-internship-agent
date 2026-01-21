@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'AI Job Application Agent',
-  description: 'Automated job application agent powered by AI',
+  title: 'AI Job Agent - Candidature Automatique',
+  description: 'Automatisez votre recherche d\'emploi avec l\'intelligence artificielle',
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body className={inter.className}>{children}</body>
     </html>
   );

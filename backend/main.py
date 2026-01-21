@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from backend.api.routes import jobs, applications, ai
+from backend.api.routes import jobs, applications, ai, auth, stats, resumes, profile, search_criteria
 from backend.core.config import settings
 
 app = FastAPI(
@@ -24,6 +24,11 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
+app.include_router(stats.router, prefix="/api/stats", tags=["statistics"])
+app.include_router(resumes.router, prefix="/api/resumes", tags=["resumes"])
+app.include_router(profile.router, prefix="/api/profile", tags=["profile"])
+app.include_router(search_criteria.router, prefix="/api/search-criteria", tags=["search-criteria"])
 app.include_router(jobs.router, prefix="/api/jobs", tags=["jobs"])
 app.include_router(applications.router, prefix="/api/applications", tags=["applications"])
 app.include_router(ai.router, prefix="/api/ai", tags=["ai"])

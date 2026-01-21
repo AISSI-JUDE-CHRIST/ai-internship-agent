@@ -61,6 +61,7 @@ class User(Base):
     resumes = relationship("Resume", back_populates="user", cascade="all, delete-orphan")
     applications = relationship("Application", back_populates="user", cascade="all, delete-orphan")
     search_history = relationship("JobSearchHistory", back_populates="user", cascade="all, delete-orphan")
+    search_criteria = relationship("SearchCriteria", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 
 class Resume(Base):
@@ -182,6 +183,54 @@ class JobSearchHistory(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class SearchCriteria(Base):
+    """Search criteria model for job search preferences"""
+    __tablename__ = "search_criteria"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    
+    # Domain/Sector
+    domain = Column(String(255))  # Ex: "Informatique", "Marketing", etc.
+    sectors = Column(Text)  # JSON array of sectors
+    
+    # Location
+    location = Column(String(255))
+    preferred_locations = Column(Text)  # JSON array
+    remote_only = Column(Boolean, default=False)
+    
+    # Job/Internship type
+    job_type = Column(SQLEnum(JobType))
+    internship_duration = Column(String(50))  # Ex: "3 mois", "6 mois", "1 an"
+    
+    # Keywords
+    required_keywords = Column(Text)  # JSON array of required keywords
+    excluded_keywords = Column(Text)  # JSON array of excluded keywords
+    
+    # Dates
+    preferred_start_date = Column(DateTime(timezone=True))
+    earliest_start_date = Column(DateTime(timezone=True))
+    latest_start_date = Column(DateTime(timezone=True))
+    
+    # Salary (optional for internships)
+    min_salary = Column(Float)
+    max_salary = Column(Float)
+    salary_currency = Column(String(10), default="EUR")
+    
+    # Platforms
+    platforms = Column(Text)  # JSON array of platforms to search
+    
+    # Other filters
+    min_experience_years = Column(Integer)
+    max_experience_years = Column(Integer)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="search_criteria")
+
+
 class UserProfile(Base):
     """Extended user profile information"""
     __tablename__ = "user_profiles"
@@ -189,13 +238,34 @@ class UserProfile(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     
+    # Personal info
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    email = Column(String(255))
+    phone = Column(String(20))
+    address = Column(String(500))
+    date_of_birth = Column(DateTime(timezone=True))
+    
     # Professional info
     current_position = Column(String(255))
     current_company = Column(String(255))
     years_of_experience = Column(Integer)
-    education = Column(Text)
-    skills = Column(Text)  # JSON string or comma-separated
-    languages = Column(Text)
+    summary = Column(Text)  # Professional summary
+    
+    # Education (JSON array)
+    education = Column(Text)  # JSON: [{"degree": "", "school": "", "field": "", "start_date": "", "end_date": "", "description": ""}]
+    
+    # Experience (JSON array)
+    experience = Column(Text)  # JSON: [{"title": "", "company": "", "location": "", "start_date": "", "end_date": "", "description": "", "current": false}]
+    
+    # Skills (JSON array or comma-separated)
+    skills = Column(Text)  # JSON array or comma-separated
+    
+    # Languages (JSON array)
+    languages = Column(Text)  # JSON: [{"language": "", "level": ""}]
+    
+    # Certifications (JSON array)
+    certifications = Column(Text)  # JSON: [{"name": "", "issuer": "", "date": "", "expiry_date": ""}]
     
     # Preferences
     preferred_job_types = Column(String(500))  # JSON array
@@ -210,6 +280,9 @@ class UserProfile(Base):
     github_url = Column(String(500))
     portfolio_url = Column(String(500))
     
+    # Extraction info
+    extracted_from_resume_id = Column(Integer, ForeignKey("resumes.id"))
+    extraction_date = Column(DateTime(timezone=True))
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
