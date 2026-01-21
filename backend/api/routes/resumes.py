@@ -12,6 +12,11 @@ from backend.database.base import get_db
 from backend.database.models import Resume, User
 from backend.database.schemas import ResumeResponse, ResumeCreate, ResumeUpdate
 from backend.api.routes.auth import get_current_user
+from backend.services.pdf_extractor import PDFExtractor
+from backend.services.ai_service import AIService
+from backend.core.config import settings
+import json
+from loguru import logger
 
 router = APIRouter()
 
@@ -41,11 +46,12 @@ async def upload_resume(
     file: UploadFile = File(...),
     title: str = Form(...),
     is_default: bool = Form(False),
+    extract_profile: bool = Form(True),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Upload a new resume/CV
+    Upload a new resume/CV and optionally extract profile information
     """
     # Validate file
     validate_file(file)
@@ -69,6 +75,28 @@ async def upload_resume(
     with open(file_path, "wb") as f:
         f.write(content)
     
+    # Extract text from PDF
+    extracted_text = ""
+    extracted_profile = None
+    
+    try:
+        pdf_extractor = PDFExtractor()
+        extracted_text = pdf_extractor.extract_text(str(file_path))
+        logger.info(f"Extracted {len(extracted_text)} characters from PDF")
+        
+        # Extract profile using AI if requested
+        if extract_profile and extracted_text and settings.OPENAI_API_KEY:
+            try:
+                ai_service = AIService(api_key=settings.OPENAI_API_KEY)
+                extracted_profile = ai_service.extract_profile_from_resume(extracted_text)
+                logger.info("Successfully extracted profile using AI")
+            except Exception as e:
+                logger.error(f"Error extracting profile with AI: {e}")
+                extracted_profile = None
+    except Exception as e:
+        logger.error(f"Error extracting text from PDF: {e}")
+        # Continue without extraction
+    
     # If this is set as default, unset other defaults
     if is_default:
         db.query(Resume).filter(
@@ -81,14 +109,23 @@ async def upload_resume(
         user_id=current_user.id,
         title=title,
         file_path=str(file_path),
-        is_default=is_default
+        is_default=is_default,
+        content=extracted_text if extracted_text else None
     )
     
     db.add(db_resume)
     db.commit()
     db.refresh(db_resume)
     
-    return db_resume
+    # Prepare response with ResumeResponse model
+    response = ResumeResponse.model_validate(db_resume)
+    
+    # Convert to dict and add extracted profile if available
+    response_dict = response.model_dump()
+    if extracted_profile:
+        response_dict["extracted_profile"] = extracted_profile
+    
+    return response_dict
 
 
 @router.get("/", response_model=List[ResumeResponse])

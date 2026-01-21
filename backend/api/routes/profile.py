@@ -18,80 +18,55 @@ router = APIRouter()
 def extract_profile_from_resume(resume_content: str) -> dict:
     """
     Extract profile information from resume using AI
+    
+    Args:
+        resume_content: Text content extracted from resume
+        
+    Returns:
+        Dictionary with structured profile data
     """
-    ai_service = AIService(api_key=settings.OPENAI_API_KEY)
+    if not settings.OPENAI_API_KEY:
+        logger.warning("OpenAI API key not configured, returning empty profile")
+        return {
+            "personal_info": {
+                "first_name": "",
+                "last_name": "",
+                "email": "",
+                "phone": "",
+                "address": "",
+                "linkedin": "",
+                "website": ""
+            },
+            "summary": "",
+            "experience": [],
+            "education": [],
+            "skills": [],
+            "languages": [],
+            "certifications": []
+        }
     
-    prompt = f"""
-    Extrait les informations suivantes de ce CV et retourne-les au format JSON:
-    
-    {{
-        "personal_info": {{
-            "first_name": "",
-            "last_name": "",
-            "email": "",
-            "phone": "",
-            "address": ""
-        }},
-        "summary": "",
-        "experience": [
-            {{
-                "title": "",
-                "company": "",
-                "location": "",
-                "start_date": "",
-                "end_date": "",
-                "description": "",
-                "current": false
-            }}
-        ],
-        "education": [
-            {{
-                "degree": "",
-                "school": "",
-                "field": "",
-                "start_date": "",
-                "end_date": "",
-                "description": ""
-            }}
-        ],
-        "skills": [],
-        "languages": [
-            {{
-                "language": "",
-                "level": ""
-            }}
-        ],
-        "certifications": [
-            {{
-                "name": "",
-                "issuer": "",
-                "date": "",
-                "expiry_date": ""
-            }}
-        ]
-    }}
-    
-    CV:
-    {resume_content}
-    """
-    
-    # TODO: Implement actual AI extraction
-    # For now, return empty structure
-    return {
-        "personal_info": {
-            "first_name": "",
-            "last_name": "",
-            "email": "",
-            "phone": "",
-            "address": ""
-        },
-        "summary": "",
-        "experience": [],
-        "education": [],
-        "skills": [],
-        "languages": [],
-        "certifications": []
-    }
+    try:
+        ai_service = AIService(api_key=settings.OPENAI_API_KEY)
+        return ai_service.extract_profile_from_resume(resume_content)
+    except Exception as e:
+        logger.error(f"Error extracting profile: {e}")
+        return {
+            "personal_info": {
+                "first_name": "",
+                "last_name": "",
+                "email": "",
+                "phone": "",
+                "address": "",
+                "linkedin": "",
+                "website": ""
+            },
+            "summary": "",
+            "experience": [],
+            "education": [],
+            "skills": [],
+            "languages": [],
+            "certifications": []
+        }
 
 
 @router.post("/extract/{resume_id}")
@@ -111,8 +86,29 @@ async def extract_profile_from_resume_endpoint(
     if not resume:
         raise HTTPException(status_code=404, detail="CV non trouvé")
     
-    # Read resume content (if stored as text)
-    resume_content = resume.content or ""
+    # Extract text from PDF if not already extracted
+    resume_content = resume.content
+    
+    if not resume_content and resume.file_path:
+        try:
+            pdf_extractor = PDFExtractor()
+            resume_content = pdf_extractor.extract_text(resume.file_path)
+            
+            # Update resume with extracted text
+            resume.content = resume_content
+            db.commit()
+        except Exception as e:
+            logger.error(f"Error extracting text from PDF: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail="Erreur lors de l'extraction du texte du PDF"
+            )
+    
+    if not resume_content:
+        raise HTTPException(
+            status_code=400,
+            detail="Impossible d'extraire le texte du CV"
+        )
     
     # Extract profile using AI
     extracted_data = extract_profile_from_resume(resume_content)
